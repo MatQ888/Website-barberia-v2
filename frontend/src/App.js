@@ -1,122 +1,150 @@
-import React, { useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
+import "@/App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import axios from "axios";
 import { Toaster } from "./components/ui/sonner";
-import { Header } from "./components/Header";
-import { Hero } from "./components/Hero";
-import { Menu } from "./components/Menu";
-import { Features } from "./components/Features";
-import { Gallery } from "./components/Gallery";
-import { ReservationForm } from "./components/ReservationForm";
-import { Testimonials } from "./components/Testimonials";
-import { FAQ } from "./components/FAQ";
-import { Footer } from "./components/Footer";
-import {
-  restaurantInfo,
-  dishes,
-  features,
-  gallery,
-  faqs,
-  testimonials,
-  mockReservation
-} from "./mockData";
-import "./App.css";
+import { toast } from "sonner";
 
-function App() {
-  const handleReserveClick = () => {
-    const reservationSection = document.getElementById('reservar');
-    reservationSection?.scrollIntoView({ behavior: 'smooth' });
+// Components
+import Header from "./components/Header";
+import Hero from "./components/Hero";
+import About from "./components/About";
+import Services from "./components/Services";
+import Booking from "./components/Booking";
+import Products from "./components/Products";
+import Reviews from "./components/Reviews";
+import Footer from "./components/Footer";
+import Cart from "./components/Cart";
+import CheckoutSuccess from "./components/CheckoutSuccess";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+export const API = `${BACKEND_URL}/api`;
+
+// Cart Context
+export const CartContext = createContext();
+
+export const CartProvider = ({ children }) => {
+  const [cartItems, setCartItems] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const addToCart = (product) => {
+    setCartItems((prev) => {
+      const existing = prev.find((item) => item.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+    toast.success(`${product.name} añadido al carrito`);
   };
 
-  
-  
-  // Reemplaza 'const handleReservationSubmit = async ...' con esto:
+  const removeFromCart = (productId) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== productId));
+  };
 
-const handleReservationSubmit = async (formData) => {
-  try {
-    // 1. LA URL DE TEST DE TU WEBHOOK N8N (Pegar aquí lo que copiaste en el PASO 1)
-    // No borres '/webhook-test/' mientras estás en fase de desarrollo.
-    const n8n_webhook_url = "http://localhost:5678/webhook-test/cb544185-7f62-4447-bca0-08467b29779b";
-
-    // 2. LA PETICIÓN OPTIMIZADA
-    const response = await fetch(n8n_webhook_url, {
-      method: "POST", // Método POST correcto
-      headers: {
-        "Content-Type": "application/json", // Decimos a n8n que enviamos JSON
-      },
-      // Convertimos el objeto formData a un string JSON puro
-      body: JSON.stringify({
-        // Aseguramos que los nombres de las claves sean claros y consistentes
-        cliente_nombre: formData.name || "Sin nombre",
-        cliente_email: formData.email || "Sin email",
-        cliente_telefono: formData.phone || "Sin teléfono",
-        reserva_fecha: formData.date || "",
-        reserva_hora: formData.time || "",
-        reserva_personas: formData.guests || "0"
-      }),
-    });
-
-    // 3. MANEJO DE LA RESPUESTA
-    // n8n por defecto devuelve solo texto ("Workflow started").
-    // No necesitamos parsear JSON aquí a menos que configures n8n para responderlo.
-    if (response.ok) {
-      return {
-        success: true,
-        message: "Reserva enviada correctamente a procesamiento."
-      };
-    } else {
-      throw new Error(`Error en el servidor n8n: ${response.status}`);
+  const updateQuantity = (productId, quantity) => {
+    if (quantity <= 0) {
+      removeFromCart(productId);
+      return;
     }
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === productId ? { ...item, quantity } : item
+      )
+    );
+  };
 
-  } catch (error) {
-    console.error("Error crítico enviando la reserva:", error);
-    // Devolvemos un objeto de error estructurado para la UI
-    return {
-      success: false,
-      message: "Lo sentimos, hubo un problema técnico. Inténtelo de nuevo."
-    };
-  }
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
+  const cartTotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  return (
+    <CartContext.Provider
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        cartTotal,
+        cartCount,
+        isCartOpen,
+        setIsCartOpen,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
 };
 
-  
-  
+export const useCart = () => useContext(CartContext);
+
+// Main Home Page
+const Home = () => {
+  const [services, setServices] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [businessInfo, setBusinessInfo] = useState(null);
+
   useEffect(() => {
-    // Log para verificar que la app se cargó correctamente
-    console.log("La Cochinita tonta - App cargada");
+    const fetchData = async () => {
+      try {
+        const [servicesRes, productsRes, businessRes] = await Promise.all([
+          axios.get(`${API}/services`),
+          axios.get(`${API}/products`),
+          axios.get(`${API}/business-info`),
+        ]);
+        setServices(servicesRes.data);
+        setProducts(productsRes.data);
+        setBusinessInfo(businessRes.data);
+      } catch (e) {
+        console.error("Error fetching data:", e);
+      }
+    };
+    fetchData();
   }, []);
 
   return (
-    <div className="App">
-      <Toaster position="top-right" />
-      
-      <Header 
-        restaurantInfo={restaurantInfo}
-        onReserveClick={handleReserveClick}
-      />
-
+    <div className="min-h-screen" data-testid="home-page">
+      <div className="noise-overlay" />
+      <Header businessInfo={businessInfo} />
       <main>
-        <Hero 
-          restaurantInfo={restaurantInfo}
-          onReserveClick={handleReserveClick}
-        />
-
-        <Menu dishes={dishes} />
-
-        <Features features={features} />
-
-        <div id="galeria">
-          <Gallery gallery={gallery} />
-        </div>
-
-        <ReservationForm onSubmit={handleReservationSubmit} />
-
-        <Testimonials testimonials={testimonials} />
-
-        <div id="faq">
-          <FAQ faqs={faqs} />
-        </div>
+        <Hero businessInfo={businessInfo} />
+        <About />
+        <Services services={services} />
+        <Booking services={services} />
+        <Products products={products} />
+        <Reviews />
+        <Footer businessInfo={businessInfo} />
       </main>
-
-      <Footer restaurantInfo={restaurantInfo} />
+      <Cart />
     </div>
+  );
+};
+
+function App() {
+  return (
+    <CartProvider>
+      <div className="App">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          </Routes>
+        </BrowserRouter>
+        <Toaster position="bottom-right" richColors />
+      </div>
+    </CartProvider>
   );
 }
 
