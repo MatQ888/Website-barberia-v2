@@ -10,7 +10,6 @@ import Hero from "./components/Hero";
 import About from "./components/About";
 import Services from "./components/Services";
 import Booking from "./components/Booking";
-import Reviews from "./components/Reviews";
 import Footer from "./components/Footer";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -46,7 +45,6 @@ const Home = () => {
         <About />
         <Services services={services} />
         <Booking services={services} />
-        <Reviews />
         <Footer businessInfo={businessInfo} />
       </main>
     </div>
