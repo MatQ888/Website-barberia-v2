@@ -24,17 +24,16 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const [servicesRes, businessRes] = await Promise.all([
-          axios.get(`${API}/services`),
-          axios.get(`${API}/business-info`),
+          axios.get(`${API}/services`).catch(() => ({ data: [] })),
+          axios.get(`${API}/business-info`).catch(() => ({ data: null })),
         ]);
-        setServices(servicesRes.data);
-        setBusinessInfo(businessRes.data);
+        setServices(servicesRes.data || []);
+        setBusinessInfo(businessRes.data || {});
       } catch (e) {
         console.error("Error fetching data:", e);
+        setServices([]); // Evita que la web explote si no hay internet
       }
     };
-    fetchData();
-  }, []);
 
   return (
     <div className="min-h-screen" data-testid="home-page">
