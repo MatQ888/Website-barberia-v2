@@ -1,4 +1,4 @@
-import { useState, createContext } from "react";
+import { useState, createContext, useContext } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "./components/ui/sonner";
@@ -11,11 +11,18 @@ import Services from "./components/Services";
 import Booking from "./components/Booking";
 import Footer from "./components/Footer";
 
-// ESTO ES LO QUE FALTA: Definir y exportar API para que los otros archivos no den error
+// 1. Definimos las exportaciones que los otros archivos buscan (API y Cart)
 export const API = ""; 
-export const CartContext = createContext(null);
+export const CartContext = createContext();
+export const useCart = () => useContext(CartContext) || { cartItems: [], cartCount: 0, addToCart: () => {} };
 
-// Main Home Page
+// 2. Un proveedor simple para que no explote la web
+const CartProvider = ({ children }) => (
+  <CartContext.Provider value={{ cartItems: [], cartCount: 0, addToCart: () => {} }}>
+    {children}
+  </CartContext.Provider>
+);
+
 const Home = () => {
   const [services] = useState([
     { id: 1, name: "Corte de Pelo", price: 15, description: "Corte clásico o moderno" },
@@ -47,14 +54,16 @@ const Home = () => {
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-        </Routes>
-      </BrowserRouter>
-      <Toaster position="bottom-right" richColors />
-    </div>
+    <CartProvider>
+      <div className="App">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+          </Routes>
+        </BrowserRouter>
+        <Toaster position="bottom-right" richColors />
+      </div>
+    </CartProvider>
   );
 }
 
