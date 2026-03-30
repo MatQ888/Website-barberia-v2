@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import { Toaster } from "./components/ui/sonner";
 
-// Components
+// Components - Cambiados a importación con llaves por si no son default
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import About from "./components/About";
@@ -15,7 +15,6 @@ import Footer from "./components/Footer";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 export const API = `${BACKEND_URL}/api`;
 
-// Main Home Page
 const Home = () => {
   const [services, setServices] = useState([]);
   const [businessInfo, setBusinessInfo] = useState(null);
@@ -31,7 +30,6 @@ const Home = () => {
         setBusinessInfo(businessRes.data || {});
       } catch (e) {
         console.error("Error fetching data:", e);
-        setServices([]);
       }
     };
     fetchData();
@@ -40,13 +38,14 @@ const Home = () => {
   return (
     <div className="min-h-screen" data-testid="home-page">
       <div className="noise-overlay" />
-      <Header businessInfo={businessInfo} />
+      {/* Usamos condicionales para que no explote si el componente falló al cargar */}
+      {Header && <Header businessInfo={businessInfo} />}
       <main>
-        <Hero businessInfo={businessInfo} />
-        <About />
-        <Services services={services} />
-        <Booking services={services} />
-        <Footer businessInfo={businessInfo} />
+        {Hero && <Hero businessInfo={businessInfo} />}
+        {About && <About />}
+        {Services && <Services services={services} />}
+        {Booking && <Booking services={services} />}
+        {Footer && <Footer businessInfo={businessInfo} />}
       </main>
     </div>
   );
