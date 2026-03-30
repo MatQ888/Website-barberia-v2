@@ -53,3 +53,5 @@ export const Footer = ({ restaurantInfo }) => {
     </footer>
   );
 };
+
+export default Footer;
