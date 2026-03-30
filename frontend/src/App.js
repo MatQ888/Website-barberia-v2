@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import axios from "axios";
 import { Toaster } from "./components/ui/sonner";
 
 // Components
@@ -11,21 +12,28 @@ import Services from "./components/Services";
 import Booking from "./components/Booking";
 import Footer from "./components/Footer";
 
-// Main Home Page
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+export const API = `${BACKEND_URL}/api`;
+
 const Home = () => {
-  // Datos locales para que la web NO salga en blanco y no dependa de un servidor
-  const [services] = useState([
-    { id: 1, name: "Corte de Pelo", price: 15, description: "Corte clásico o moderno" },
-    { id: 2, name: "Arreglo de Barba", price: 10, description: "Perfilado y ritual con toalla caliente" },
-    { id: 3, name: "Corte + Barba", price: 22, description: "Combo completo de barbería" }
-  ]);
-  
-  const [businessInfo] = useState({
-    name: "The Corner Barber",
-    phone: "677 83 75 93",
-    address: "Almería, España",
-    schedule: "Lunes a Sábado: 10:00 - 20:00"
-  });
+  const [services, setServices] = useState([]);
+  const [businessInfo, setBusinessInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [servicesRes, businessRes] = await Promise.all([
+          axios.get(`${API}/services`).catch(() => ({ data: [] })),
+          axios.get(`${API}/business-info`).catch(() => ({ data: null })),
+        ]);
+        setServices(servicesRes.data || []);
+        setBusinessInfo(businessRes.data || {});
+      } catch (e) {
+        console.error("Error fetching data:", e);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen">
