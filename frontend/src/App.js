@@ -4,13 +4,21 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import { Toaster } from "./components/ui/sonner";
 
-// Components - Cambiados a importación con llaves por si no son default
-import Header from "./components/Header";
-import Hero from "./components/Hero";
-import About from "./components/About";
-import Services from "./components/Services";
-import Booking from "./components/Booking";
-import Footer from "./components/Footer";
+// Components - IMPORTACIÓN DINÁMICA (con llaves para evitar errores de export)
+import * as HeaderModule from "./components/Header";
+import * as HeroModule from "./components/Hero";
+import * as AboutModule from "./components/About";
+import * as ServicesModule from "./components/Services";
+import * as BookingModule from "./components/Booking";
+import * as FooterModule from "./components/Footer";
+
+// Extraemos el componente ya sea si es default o nombrado
+const Header = HeaderModule.default || HeaderModule.Header || HeaderModule;
+const Hero = HeroModule.default || HeroModule.Hero || HeroModule;
+const About = AboutModule.default || AboutModule.About || AboutModule;
+const Services = ServicesModule.default || ServicesModule.Services || ServicesModule;
+const Booking = BookingModule.default || BookingModule.Booking || BookingModule;
+const Footer = FooterModule.default || FooterModule.Footer || FooterModule;
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 export const API = `${BACKEND_URL}/api`;
@@ -38,14 +46,13 @@ const Home = () => {
   return (
     <div className="min-h-screen" data-testid="home-page">
       <div className="noise-overlay" />
-      {/* Usamos condicionales para que no explote si el componente falló al cargar */}
-      {Header && <Header businessInfo={businessInfo} />}
+      <Header businessInfo={businessInfo} />
       <main>
-        {Hero && <Hero businessInfo={businessInfo} />}
-        {About && <About />}
-        {Services && <Services services={services} />}
-        {Booking && <Booking services={services} />}
-        {Footer && <Footer businessInfo={businessInfo} />}
+        <Hero businessInfo={businessInfo} />
+        <About />
+        <Services services={services} />
+        <Booking services={services} />
+        <Footer businessInfo={businessInfo} />
       </main>
     </div>
   );
