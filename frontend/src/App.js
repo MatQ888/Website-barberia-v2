@@ -16,22 +16,33 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 export const API = `${BACKEND_URL}/api`;
 
 const Home = () => {
-  const [services, setServices] = useState([]);
-  const [businessInfo, setBusinessInfo] = useState(null);
+  // Datos de prueba para que la web no salga en blanco
+  const [services] = useState([
+    { id: 1, name: "Corte de Pelo", price: 15, description: "Corte clásico o moderno" },
+    { id: 2, name: "Arreglo de Barba", price: 10, description: "Perfilado y ritual con toalla caliente" }
+  ]);
+  
+  const [businessInfo] = useState({
+    name: "The Corner Barber",
+    phone: "677 83 75 93",
+    address: "Almería, España",
+    schedule: "Lunes a Sábado: 10:00 - 20:00"
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [servicesRes, businessRes] = await Promise.all([
-          axios.get(`${API}/services`).catch(() => ({ data: [] })),
-          axios.get(`${API}/business-info`).catch(() => ({ data: null })),
-        ]);
-        setServices(servicesRes.data || []);
-        setBusinessInfo(businessRes.data || {});
-      } catch (e) {
-        console.error("Error fetching data:", e);
-      }
-    };
+  return (
+    <div className="min-h-screen">
+      <div className="noise-overlay" />
+      <Header businessInfo={businessInfo} />
+      <main>
+        <Hero businessInfo={businessInfo} />
+        <About />
+        <Services services={services} />
+        <Booking services={services} />
+        <Footer businessInfo={businessInfo} />
+      </main>
+    </div>
+  );
+};
     fetchData();
   }, []);
 
