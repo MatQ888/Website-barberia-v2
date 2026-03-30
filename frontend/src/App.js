@@ -12,7 +12,7 @@ import Services from "./components/Services";
 import Booking from "./components/Booking";
 import Footer from "./components/Footer";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 export const API = `${BACKEND_URL}/api`;
 
 // Main Home Page
@@ -31,9 +31,11 @@ const Home = () => {
         setBusinessInfo(businessRes.data || {});
       } catch (e) {
         console.error("Error fetching data:", e);
-        setServices([]); // Evita que la web explote si no hay internet
+        setServices([]);
       }
     };
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen" data-testid="home-page">
