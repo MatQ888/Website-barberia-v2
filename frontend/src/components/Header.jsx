@@ -47,3 +47,4 @@ export const Header = ({ restaurantInfo, onReserveClick }) => {
     </header>
   );
 };
+export default Header;
